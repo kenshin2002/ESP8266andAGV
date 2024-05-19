@@ -17,8 +17,8 @@ SoftwareSerial mySerial(D4,D5); // Rx Tx
 // D4 - PB10
 // D5 - zPB11
 // put function declarations here:
-const char* ssid = "VNPT_TUAN DAT";
-const char* pass = "0335140286";
+const char* ssid = "TP-Link_AD56";
+const char* pass = "44446666";
 // tạo ra biến để lưu thông số server
 
 
@@ -27,7 +27,7 @@ const char* mqtt_server = "b37.mqtt.one"; //
 int mqtt_port = 1883;
 const char* mqtt_user = "58kpuw3237";
 const char* mqtt_pass = "23afijkqtv";
-String topicsub = "58kpuw3237/databackend"; // nhận dữ liệu ESP ở topic toannv10291/quat => APP WEB gửi toannv10291/quat
+String topicsub = "58kpuw3237/databackend"; // nhận dữ liệu
 String topicpub = "58kpuw3237/dataespsend"; // gửi dữ liệu
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -40,7 +40,7 @@ int bienTB2 = 0;
 
 long last1 = 0;
 
-
+int check=0;
 int biengui = 0;
 //data esp send
 int Pre = 0;
@@ -49,6 +49,7 @@ int State = 0;
 uint16_t vantoc = 0;
 long vatcan = 0;
 uint16_t PIN = 0;
+String preWay="a";
 
 long C1 = 500;
 long C2 = 1000;
@@ -128,12 +129,32 @@ void ParseJson(String Data)
     Serial.println(" ");
     Serial.println("Chuoi gui xuong STM32:");
     
-   if(JSON1["AGV"]=="1"){
-    
+   if(JSON1["AGV"]=="1" ){
     String Path = JSON1["path"];
-    Serial.println(Path);
-    mySerial.println(Path);
-    }
+    //Serial.println(Path);
+  //  if(check == 0){
+    //  Serial.println("Da vao dc if");
+      if(Path != "STOP" && Path !="COMEBACK" && Path !="CONTINUE"){
+      String temp="1_00001110_2_00000101_3_00000001_4_00000000";
+      Serial.println(temp);
+      mySerial.println(temp);
+      }else if (Path =="STOP"){
+        Serial.println("STOP");
+        mySerial.println("STOP");
+      }else if(Path =="COMEBACK"){
+        Serial.println("COMEBACK");
+        mySerial.println("COMEBACK");
+      }else if (Path == "CONTINUE"){
+         Serial.println("CONTINUE");
+        mySerial.println("CONTINUE");
+      }
+      
+     // check=1;
+  //  }
+   }
+//   if(JSON1["AGV"]=="100"){
+ //   check=0;
+ //  }
   }
 }
 /*    if (JSON1["TB2"] == "0")
@@ -188,7 +209,7 @@ void ParseJson(String Data)
   }
 */
 
-void Datajson(String DataAGV,String DataState,String DataVT,String DataVC, String DataPIN,String DataPre,String DataNext)
+void Datajson(String DataAGV,String DataState,String DataVT,String DataVC, String DataPIN,String DataPre,String DataNext,String weight)
 {
   DataMqttJson  = "{\"car_id\":\"" + String(DataAGV) + "\"," +
                   "\"carState\":\"" + String(DataState) + "\"," +
@@ -196,6 +217,7 @@ void Datajson(String DataAGV,String DataState,String DataVT,String DataVC, Strin
                   "\"carSpeed\":\"" + String(DataVT) + "\"," +
                   "\"carBattery\":\"" + String(DataPIN) + "\"," +
                   "\"previousNode\":\"" + String(DataPre) + "\"," +
+                  "\"weight\":\"" + String(weight) + "\","
                   "\"nextNode\":\"" + String(DataNext) + "\"}";
   Serial.println();
   Serial.print("DataMqttJson: ");
@@ -214,7 +236,7 @@ void SendDataMQTT()
     if (client.connected())
     {
       Chuongtrinhcambien();
-      Datajson(String(1),String(State),String(vatcan),String(vantoc),String(PIN),String(Pre),String(Next));
+      Datajson(String(1),String(State),String(vantoc),String(vatcan),String(PIN),String(Pre),String(Next),String(18));
     }
     last = millis();
   }
